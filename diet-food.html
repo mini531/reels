@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>공복 음식 9가지 (실사판)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #E0F2F1;
+            font-family: 'Noto Sans KR', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            -webkit-user-select: none; user-select: none;
+            position: relative;
+        }
+        .container {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            padding-top: 15vh;
+            padding-bottom: 30vh; 
+            padding-left: 20px; padding-right: 20px;
+        }
+        
+        header { text-align: center; margin-bottom: 4vh; animation: fadeIn 1s; }
+        h1 {
+            font-size: 2.0rem; color: #004D40; font-weight: 900;
+            line-height: 1.3; margin-bottom: 10px;
+            text-shadow: 2px 2px 0 rgba(255,255,255,0.8);
+        }
+        .badge {
+            background: #00897B; color: #fff; padding: 6px 15px;
+            border-radius: 20px; font-weight: 700; font-size: 0.9rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 이미지 원형 프레임 */
+        .visual-circle {
+            width: 280px; height: 280px;
+            border-radius: 50%;
+            background: white;
+            border: 8px solid #B2DFDB;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            margin-bottom: 4vh;
+            position: relative;
+            overflow: hidden; /* 이미지가 튀어나가지 않게 */
+            transition: border-color 0.3s;
+        }
+        
+        /* 실제 이미지 스타일 */
+        .food-img {
+            width: 100%; height: 100%;
+            object-fit: cover; /* 원 안에 꽉 차게 */
+            border-radius: 50%;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* 텍스트 카드 */
+        .info-card {
+            background: white;
+            width: 100%; max-width: 340px;
+            padding: 25px 20px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transform: translateY(20px); opacity: 0;
+            transition: all 0.3s ease;
+            border-left: 10px solid #ddd;
+        }
+        .info-card.active { transform: translateY(0); opacity: 1; }
+
+        .food-name {
+            display: block; font-size: 1.6rem; font-weight: 900;
+            margin-bottom: 8px; color: #333;
+        }
+        .food-effect {
+            font-size: 1.1rem; color: #666; font-weight: 600;
+            word-break: keep-all;
+        }
+
+        .counter {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(0,0,0,0.6); /* 사진 위라서 배경 어둡게 */
+            padding: 4px 10px; border-radius: 12px;
+            font-weight: 700; color: #fff;
+            font-size: 0.8rem; z-index: 10;
+        }
+
+        /* 애니메이션 */
+        .pop-in { animation: popEffect 0.5s forwards; }
+        @keyframes popEffect {
+            0% { transform: scale(0.8); opacity: 0.8; }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .download-btn {
+            position: absolute; bottom: 30px; right: 30px;
+            background: #333; color: #fff; padding: 10px 15px;
+            border-radius: 30px; font-size: 0.8rem; border: none;
+            z-index: 9999; cursor: pointer; opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>아침 공복에 먹으면<br>살 빠지는 음식 9가지</h1>
+            <div class="badge">🥑 저탄고지(LCHF) 추천</div>
+        </header>
+
+        <div class="visual-circle" id="circleBg">
+            <div class="counter" id="pageCount">1/9</div>
+            <img id="mainImage" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="음식사진" class="food-img">
+        </div>
+
+        <div class="info-card" id="card">
+            <span class="food-name" id="name">로딩 중...</span>
+            <span class="food-effect" id="effect">잠시만 기다려주세요</span>
+        </div>
+    </div>
+
+    <button class="download-btn" onclick="downloadHTML()" id="downBtn">📥 저장</button>
+
+    <script>
+        // Unsplash 고화질 실제 이미지 URL 매핑
+        const foods = [
+            { 
+                n: "미지근한 물", 
+                e: "체내 순환 활성화 & 노폐물 배출", 
+                img: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=600&h=600&fit=crop&q=80",
+                c: "#29B6F6" 
+            }, 
+            { 
+                n: "천연 식초(애사비)", 
+                e: "혈당 스파이크 방지 & 인슐린 조절", 
+                img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=600&h=600&fit=crop&q=80", 
+                c: "#FDD835" 
+            },
+            { 
+                n: "삶은 달걀", 
+                e: "완벽한 단백질, 식욕 조절 효과", 
+                img: "https://images.unsplash.com/photo-1491524062933-cb0289261700?w=600&h=600&fit=crop&q=80", 
+                c: "#FFA726" 
+            },
+            { 
+                n: "방탄커피 (MCT)", 
+                e: "지방 연소 부스터, 즉각 에너지", 
+                img: "https://images.unsplash.com/photo-1599324543789-2184a56c4960?w=600&h=600&fit=crop&q=80", 
+                c: "#795548" 
+            },
+            { 
+                n: "아보카도", 
+                e: "착한 지방 풍부, 포만감 최고", 
+                img: "https://images.unsplash.com/photo-1601039641847-7857b994d704?w=600&h=600&fit=crop&q=80", 
+                c: "#66BB6A" 
+            },
+            { 
+                n: "그릭 요거트", 
+                e: "유산균 폭탄, 장 건강 & 면역력", 
+                img: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&h=600&fit=crop&q=80", 
+                c: "#90A4AE" 
+            },
+            { 
+                n: "견과류 (호두)", 
+                e: "뇌 활성화 & 건강한 오메가3", 
+                img: "https://images.unsplash.com/photo-1563200746-5f05359cb84e?w=600&h=600&fit=crop&q=80", 
+                c: "#8D6E63" 
+            },
+            { 
+                n: "베리류", 
+                e: "항산화 성분, 과일 중 당분 최저", 
+                img: "https://images.unsplash.com/photo-1567306301408-9b74779a11af?w=600&h=600&fit=crop&q=80", 
+                c: "#AB47BC" 
+            },
+            { 
+                n: "잎채소 (양배추)", 
+                e: "위 점막 보호 & 식이섬유 충전", 
+                img: "https://images.unsplash.com/photo-1550179294-325d22227d8e?w=600&h=600&fit=crop&q=80", 
+                c: "#43A047" 
+            }
+        ];
+
+        let idx = 0;
+        const circle = document.getElementById('circleBg');
+        const imgEl = document.getElementById('mainImage');
+        const card = document.getElementById('card');
+        const nameText = document.getElementById('name');
+        const effectText = document.getElementById('effect');
+        const counter = document.getElementById('pageCount');
+        const downBtn = document.getElementById('downBtn');
+
+        // 이미지 미리 로딩 (끊김 방지)
+        foods.forEach(item => {
+            const img = new Image();
+            img.src = item.img;
+        });
+
+        function updateFood() {
+            const item = foods[idx];
+
+            // 1. 색상 테마 적용
+            circle.style.borderColor = item.c;
+            card.style.borderLeftColor = item.c;
+            nameText.style.color = item.c;
+
+            // 2. 이미지 변경 및 애니메이션 리셋
+            imgEl.src = item.img;
+            
+            imgEl.classList.remove('pop-in');
+            void imgEl.offsetWidth; // 리플로우 (애니메이션 재시작 트릭)
+            imgEl.classList.add('pop-in');
+
+            // 3. 텍스트 변경
+            counter.innerText = `${idx + 1} / 9`;
+            nameText.innerText = item.n;
+            effectText.innerText = item.e;
+
+            // 4. 카드 애니메이션
+            card.classList.remove('active');
+            setTimeout(() => {
+                card.classList.add('active');
+            }, 100);
+
+            idx = (idx + 1) % foods.length;
+        }
+
+        // 1.5초 간격
+        setInterval(updateFood, 1500);
+        
+        // 처음 실행 (약간 딜레이 주어 로딩 시간 확보)
+        setTimeout(updateFood, 100);
+
+        function downloadHTML() {
+            downBtn.style.display = 'none';
+            const htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'keto_morning_real.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => { downBtn.style.display = 'block'; }, 1000);
+        }
+    </script>
+</body>
+</html>
