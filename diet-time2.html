@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>살이 확 찌는 시간 (릴스용)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #E0F2F1;
+            font-family: 'Noto Sans KR', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            -webkit-user-select: none; user-select: none;
+            position: relative;
+        }
+        .container {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            /* 핵심 수정: 하단 여백을 35vh로 대폭 늘려 컨텐츠를 위로 올림 */
+            padding-top: 10vh;
+            padding-bottom: 35vh; 
+            padding-left: 20px; padding-right: 20px;
+            justify-content: center; /* 내용물 중앙 정렬 */
+        }
+        
+        header { text-align: center; margin-bottom: 3vh; }
+        h1 {
+            font-size: 2.2rem; color: #004D40; font-weight: 900;
+            text-shadow: 2px 2px 0 rgba(255,255,255,0.5); margin-bottom: 8px;
+        }
+        .badge {
+            background: #fff; color: #00695C; padding: 6px 14px;
+            border-radius: 20px; font-weight: 700; font-size: 0.9rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .clock-wrap {
+            position: relative; 
+            width: 65vw; max-width: 280px;
+            height: 65vw; max-height: 280px; 
+            margin-bottom: 4vh;
+        }
+        .clock-face {
+            width: 100%; height: 100%; border-radius: 50%;
+            background: #fff; border: 12px solid #B2DFDB;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            position: relative; z-index: 2;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+        .pie-slice {
+            position: absolute; top: -12px; left: -12px; right: -12px; bottom: -12px;
+            border-radius: 50%; z-index: 1; transition: background 0.2s ease; /* 반응속도 올림 */
+        }
+        .icon-area i { font-size: 3.5rem; margin-bottom: 10px; transition: color 0.2s; }
+        .time-text { font-size: 1.2rem; font-weight: 900; color: #444; letter-spacing: -1px; }
+
+        /* 카드 스타일 */
+        .card {
+            background: white; width: 100%; max-width: 340px;
+            padding: 20px 15px; border-radius: 20px; text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            opacity: 0; transform: translateY(20px);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 튀어오르는 느낌 */
+            border: 2px solid transparent;
+        }
+        .card.show { opacity: 1; transform: translateY(0); }
+        .card-title { font-size: 1.4rem; font-weight: 900; display: block; margin-bottom: 6px; letter-spacing: -0.5px;}
+        .card-desc { font-size: 1rem; color: #555; font-weight: 600; line-height: 1.4; word-break: keep-all; }
+
+        /* 팝 애니메이션 */
+        .pop { animation: popScale 0.3s forwards; }
+        @keyframes popScale {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* 다운로드 버튼 (녹화땐 안보이게) */
+        .download-btn {
+            position: absolute; bottom: 30px; right: 30px;
+            background: #333; color: #fff; padding: 10px 15px;
+            border-radius: 30px; font-size: 0.8rem; border: none;
+            z-index: 9999; cursor: pointer; opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>살이 확! 찌는 시간</h1>
+            <div class="badge">⏱️ 1분만 참으세요!</div>
+        </header>
+
+        <div class="clock-wrap">
+            <div class="pie-slice" id="pieSlice"></div>
+            <div class="clock-face">
+                <div class="icon-area"><i id="mainIcon" class="fa-solid fa-clock"></i></div>
+                <div class="time-text" id="mainTime">Start</div>
+            </div>
+        </div>
+
+        <div class="card" id="infoCard">
+            <span class="card-title" id="cardTitle">분석 중...</span>
+            <span class="card-desc" id="cardDesc">24시간 다이어트 리듬 시작</span>
+        </div>
+    </div>
+
+    <button class="download-btn" onclick="downloadHTML()" id="downBtn">📥 저장</button>
+
+    <script>
+        // 자극적인 아이콘과 멘트로 수정됨
+        const data = [
+            { t: "아침 08~10시", h: "🔥 살 빠지는 시간", d: "먹어도 안 쪄요! 황금 타이밍입니다.", c: "#43A047", i: "fa-thumbs-up", deg: [120, 150] }, // 따봉
+            { t: "점심 12~02시", h: "⚡ 대사량 폭발", d: "에너지 풀가동! 걱정 말고 드세요.", c: "#7CB342", i: "fa-fire", deg: [180, 210] }, // 불꽃
+            { t: "오후 04~06시", h: "⚠️ 설탕 폭탄 주의", d: "인슐린 고장나요. 단것 먹으면 뱃살 직행!", c: "#FB8C00", i: "fa-triangle-exclamation", deg: [240, 270] }, // 경고
+            { t: "저녁 7시 이후", h: "🛑 지방 저장 ON", d: "지금부터 먹는 건 전부 지방으로 쌓입니다.", c: "#E53935", i: "fa-anchor", deg: [285, 315] }, // 닻(무거움)
+            { t: "저녁 9시 이후", h: "☠️ 다이어트 사망", d: "물만 마셔도 위험! 절대 금식하세요.", c: "#D32F2F", i: "fa-skull", deg: [315, 345] }, // 해골
+            { t: "자기 전 2시간", h: "🚫 숙면 방해 금지", d: "몸이 쉽니다. 먹으면 독소로 변해요.", c: "#311B92", i: "fa-ban", deg: [345, 360] } // 금지
+        ];
+
+        let idx = 0;
+        const pie = document.getElementById('pieSlice');
+        const icon = document.getElementById('mainIcon');
+        const time = document.getElementById('mainTime');
+        const card = document.getElementById('infoCard');
+        const title = document.getElementById('cardTitle');
+        const desc = document.getElementById('cardDesc');
+        const downBtn = document.getElementById('downBtn');
+
+        function play() {
+            const item = data[idx];
+            
+            pie.style.background = `conic-gradient(transparent ${item.deg[0]}deg, ${item.c} ${item.deg[0]}deg, ${item.c} ${item.deg[1]}deg, transparent ${item.deg[1]}deg)`;
+            
+            icon.className = `fa-solid ${item.i}`;
+            icon.style.color = item.c;
+            
+            icon.classList.remove('pop');
+            void icon.offsetWidth; 
+            icon.classList.add('pop');
+
+            time.innerText = item.t;
+            
+            card.style.borderColor = item.c; // 카드 테두리도 색상 변경
+            card.classList.remove('show');
+            
+            // 텍스트 등장 속도 더 빠르게 (100ms)
+            setTimeout(() => {
+                title.innerText = item.h;
+                title.style.color = item.c;
+                desc.innerText = item.d;
+                card.classList.add('show');
+            }, 100);
+
+            idx = (idx + 1) % data.length;
+        }
+
+        // 속도 조절: 1300ms (1.3초) -> 아주 빠르고 경쾌함
+        setInterval(play, 1300); 
+        play();
+
+        function downloadHTML() {
+            downBtn.style.display = 'none';
+            const htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'diet_fast_reel.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => { downBtn.style.display = 'block'; }, 1000);
+        }
+    </script>
+</body>
+</html>
