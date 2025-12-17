@@ -3,221 +3,313 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>공복 음식 9가지 (NEW Design)</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>공복 다이어트 푸드</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body {
-            /* 배경: 단색 대신 은은한 그라데이션으로 고급스럽게 */
-            background: linear-gradient(135deg, #E0F2F1 0%, #B2DFDB 100%);
-            font-family: 'Noto Sans KR', sans-serif;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
             height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             overflow: hidden;
-            -webkit-user-select: none; user-select: none;
+            color: #333;
+            /* 배경: 오로라 애니메이션 (PPT 느낌 탈피) */
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            display: flex; justify-content: center; align-items: center;
         }
 
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 로딩 화면 */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.5s;
+        }
+        .loader-spinner {
+            width: 40px; height: 40px; border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db; border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* 메인 컨테이너 */
         .container {
             width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center;
-            /* 위치 조정: 위로 끌어올림 */
-            padding-top: 12vh; 
-            padding-left: 20px; padding-right: 20px;
-        }
-
-        /* 1. 타이틀 영역 */
-        header { text-align: center; margin-bottom: 3vh; z-index: 2; }
-        .main-title {
-            font-size: 2.2rem; font-weight: 900; color: #004D40;
-            line-height: 1.2; text-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 10px;
-        }
-        .tag {
-            background: #00695C; color: #fff;
-            padding: 6px 16px; border-radius: 30px;
-            font-weight: 700; font-size: 0.95rem;
-            box-shadow: 0 4px 15px rgba(0,105,92, 0.3);
-            display: inline-block;
-        }
-
-        /* 2. 이미지 영역 (원형 찌그러짐 방지) */
-        .image-frame {
             position: relative;
-            width: 75vw; max-width: 320px;
-            /* 핵심: 높이를 너비와 똑같이 강제 지정 (1:1 비율) */
-            height: 75vw; max-height: 320px; 
-            border-radius: 50%;
-            /* 핵심: 플렉스 박스 안에서 찌그러짐 방지 */
-            flex-shrink: 0; 
-            
-            background: #fff;
-            box-shadow: 0 20px 50px rgba(0,77,64, 0.15);
-            border: 6px solid rgba(255,255,255,0.6);
-            margin-bottom: -40px; /* 카드가 겹치도록 */
-            z-index: 1;
-            overflow: hidden;
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex; flex-direction: column; align-items: center;
+            padding-top: 10vh; /* 상단 여백 */
         }
 
+        /* 제목 영역 */
+        header { 
+            text-align: center; margin-bottom: 4vh; z-index: 10; 
+            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .sub-badge {
+            background: rgba(255, 255, 255, 0.9);
+            color: #d32f2f; /* 포인트 컬러 */
+            padding: 5px 12px; border-radius: 20px;
+            font-weight: 800; font-size: 0.85rem;
+            display: inline-block; margin-bottom: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 2.4rem; font-weight: 900; color: #fff;
+            line-height: 1.2; letter-spacing: -1px;
+        }
+
+        /* 이미지 프레임 (인스타 스토리 스타일) */
+        .visual-area {
+            position: relative;
+            width: 80vw; max-width: 320px;
+            height: 80vw; max-height: 320px;
+            margin-bottom: -50px; /* 카드와 겹치게 */
+            z-index: 1;
+        }
+        
+        .img-circle {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            border: 6px solid #fff;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            overflow: hidden;
+            background: #eee;
+            position: relative;
+        }
+        
         .food-img {
             width: 100%; height: 100%;
             object-fit: cover;
-            transform: scale(1.05); /* 꽉 차게 */
+            transition: transform 0.5s ease;
         }
+        .zoom-effect { transform: scale(1.1); } /* 줌 애니메이션 */
 
-        /* 순서 카운터 (오른쪽 상단) */
-        .counter-badge {
-            position: absolute; top: 20px; right: 20px;
-            background: rgba(0,0,0,0.7); color: #fff;
-            width: 50px; height: 50px;
-            border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            font-weight: 800; font-size: 0.9rem;
-            border: 2px solid rgba(255,255,255,0.5);
-            z-index: 10;
-        }
-
-        /* 3. 설명 카드 (Glassmorphism - 투명 유리 효과) */
+        /* 설명 카드 (글래스모피즘 - 유리 효과) */
         .glass-card {
             width: 90%; max-width: 380px;
-            /* 배경 투명도 + 블러 효과 */
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            
-            border-radius: 30px;
-            padding: 50px 20px 30px 20px; /* 이미지가 겹치는 윗부분 여백 확보 */
+            background: rgba(255, 255, 255, 0.85); /* 반투명 흰색 */
+            backdrop-filter: blur(15px); /* 흐림 효과 */
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 35px;
+            padding: 60px 25px 35px 25px; /* 상단 여백 확보 (이미지 겹침) */
             text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            border: 1px solid rgba(255,255,255,0.5);
-            
-            z-index: 2; /* 이미지보다 위에 */
-            transform: translateY(20px); opacity: 0;
-            transition: all 0.4s ease;
-        }
-
-        .glass-card.show { transform: translateY(0); opacity: 1; }
-
-        .name-txt {
-            display: block; font-size: 1.8rem; font-weight: 900;
-            color: #263238; margin-bottom: 8px;
-            letter-spacing: -0.5px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.6);
+            z-index: 2;
+            transform: translateY(30px); opacity: 0;
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         
-        .desc-txt {
-            font-size: 1.15rem; color: #546E7A; font-weight: 600;
-            line-height: 1.4; word-break: keep-all;
+        .glass-card.show { transform: translateY(0); opacity: 1; }
+
+        .title-text {
+            display: block; font-size: 1.8rem; font-weight: 800;
+            color: #1a1a1a; margin-bottom: 10px; letter-spacing: -0.5px;
+        }
+        .desc-text {
+            font-size: 1.1rem; color: #555; font-weight: 600;
+            line-height: 1.5; word-break: keep-all;
         }
 
-        /* 애니메이션 효과 */
-        .zoom-anim { animation: zoomIn 0.5s forwards; }
-        @keyframes zoomIn {
-            0% { transform: scale(1.1); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 1; }
+        /* 오른쪽 상단 카운터 */
+        .counter {
+            position: absolute; top: 0; right: 0;
+            background: #222; color: #fff;
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-weight: 800; font-size: 1.1rem;
+            border: 4px solid #fff; z-index: 5;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        .download-btn {
+        /* 저장 버튼 */
+        .save-btn {
             position: absolute; bottom: 30px; right: 30px;
-            background: #263238; color: #fff; padding: 10px 15px;
-            border-radius: 30px; font-size: 0.8rem; border: none;
-            z-index: 9999; cursor: pointer; opacity: 0.5;
+            background: rgba(0,0,0,0.8); color: #fff;
+            padding: 10px 15px; border-radius: 30px;
+            font-size: 0.8rem; border: none; cursor: pointer;
+            z-index: 999;
         }
     </style>
 </head>
 <body>
 
+    <div id="loader">
+        <div class="loader-spinner"></div>
+        <p style="font-weight: 700; color:#555;">고화질 이미지 로딩 중...</p>
+    </div>
+
     <div class="container">
         <header>
-            <div class="main-title">아침 공복에<br>이걸 드세요!</div>
-            <div class="tag">🥑 저탄고지(LCHF) 추천</div>
+            <div class="sub-badge">🥑 저탄고지(LCHF)</div>
+            <h1>아침 공복에<br>최고의 음식</h1>
         </header>
 
-        <div class="image-frame" id="imgFrame">
-            <div class="counter-badge" id="counter">1</div>
-            <img id="mainImg" src="" alt="음식" class="food-img">
+        <div class="visual-area">
+            <div class="counter" id="counter">1</div>
+            <div class="img-circle">
+                <img id="mainImg" src="" alt="Food" class="food-img">
+            </div>
         </div>
 
         <div class="glass-card" id="infoCard">
-            <span class="name-txt" id="foodName">로딩중...</span>
-            <span class="desc-txt" id="foodDesc">잠시만 기다려주세요</span>
+            <span class="title-text" id="name">준비중...</span>
+            <span class="desc-text" id="desc">잠시만 기다려주세요</span>
         </div>
     </div>
 
-    <button class="download-btn" onclick="downloadHTML()" id="downBtn">📥 저장</button>
+    <button class="save-btn" onclick="downloadFile()" id="downBtn">📥 저장</button>
 
     <script>
-        // 검증된 고화질 이미지 URL (Unsplash ID 사용)
-        const data = [
-            { n: "따뜻한 물", d: "독소 배출 & 신진대사 ON", img: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=600&h=600&fit=crop&q=80" },
-            { n: "애사비 (식초)", d: "혈당 스파이크 강력 방어", img: "https://plus.unsplash.com/premium_photo-1664303986043-4176378417c8?w=600&h=600&fit=crop&q=80" },
-            { n: "삶은 달걀", d: "최고의 단백질, 식욕 억제", img: "https://images.unsplash.com/photo-1491524062933-cb0289261700?w=600&h=600&fit=crop&q=80" },
-            { n: "방탄 커피", d: "지방 연소 부스터 가동!", img: "https://images.unsplash.com/photo-1599324543789-2184a56c4960?w=600&h=600&fit=crop&q=80" },
-            { n: "아보카도", d: "착한 지방, 포만감 끝판왕", img: "https://images.unsplash.com/photo-1601039641847-7857b994d704?w=600&h=600&fit=crop&q=80" },
-            { n: "그릭 요거트", d: "유산균 폭탄, 면역력 강화", img: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&h=600&fit=crop&q=80" },
-            { n: "호두 & 아몬드", d: "건강한 오메가3, 뇌 활성", img: "https://images.unsplash.com/photo-1563200746-5f05359cb84e?w=600&h=600&fit=crop&q=80" },
-            { n: "블루베리", d: "강력한 항산화, 노화 방지", img: "https://images.unsplash.com/photo-1567306301408-9b74779a11af?w=600&h=600&fit=crop&q=80" },
-            { n: "양배추", d: "위장 보호 & 식이섬유 충전", img: "https://images.unsplash.com/photo-1550179294-325d22227d8e?w=600&h=600&fit=crop&q=80" }
+        // 검증된 고화질 이미지 URL 리스트 (Unsplash Source ID)
+        // 엑박 방지를 위해 가장 유명한 사진 ID로 고정했습니다.
+        const foods = [
+            { 
+                n: "따뜻한 물", 
+                d: "자는 동안 쌓인 독소를 배출하고 신진대사를 깨웁니다.", 
+                // 물컵 사진
+                src: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=600&q=80" 
+            },
+            { 
+                n: "삶은 달걀", 
+                d: "최고의 단백질원! 포만감이 오래가서 점심 폭식을 막아줘요.", 
+                // 계란 사진
+                src: "https://images.unsplash.com/photo-1491524062933-cb0289261700?w=600&q=80" 
+            },
+            { 
+                n: "아보카도", 
+                d: "착한 지방이 풍부해서 아침 에너지를 채워줍니다.", 
+                // 아보카도 사진
+                src: "https://images.unsplash.com/photo-1601039641847-7857b994d704?w=600&q=80" 
+            },
+            { 
+                n: "그릭 요거트", 
+                d: "장 건강을 지키는 유산균 폭탄! (무가당으로 드세요)", 
+                // 요거트 사진
+                src: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&q=80" 
+            },
+            { 
+                n: "블루베리", 
+                d: "강력한 항산화 효과! 뇌세포를 깨우는 브레인 푸드.", 
+                // 블루베리 사진
+                src: "https://images.unsplash.com/photo-1498557850523-fd3d118b962e?w=600&q=80" 
+            },
+            { 
+                n: "양배추", 
+                d: "위 점막을 보호해 속 쓰림을 방지하고 식이섬유가 풍부해요.", 
+                // 양배추(녹색 채소) 사진 대체
+                src: "https://images.unsplash.com/photo-1550179294-325d22227d8e?w=600&q=80" 
+            },
+            { 
+                n: "견과류", 
+                d: "혈당을 안정시키고 건강한 지방을 공급합니다.", 
+                // 견과류 사진
+                src: "https://images.unsplash.com/photo-1563200746-5f05359cb84e?w=600&q=80" 
+            },
+            { 
+                n: "방탄 커피", 
+                d: "지방 연소 모드 ON! 활력이 필요하다면 강력 추천.", 
+                // 커피 사진
+                src: "https://images.unsplash.com/photo-1599324543789-2184a56c4960?w=600&q=80" 
+            },
+            { 
+                n: "애사비 (식초)", 
+                d: "혈당 스파이크 방지! 물에 타서 드세요.", 
+                // 식초/오일 병 사진
+                src: "https://images.unsplash.com/photo-1616406432452-92267004653e?w=600&q=80" 
+            }
         ];
 
         let idx = 0;
         const imgEl = document.getElementById('mainImg');
-        const nameEl = document.getElementById('foodName');
-        const descEl = document.getElementById('foodDesc');
-        const countEl = document.getElementById('counter');
         const cardEl = document.getElementById('infoCard');
-        const frameEl = document.getElementById('imgFrame');
+        const nameEl = document.getElementById('name');
+        const descEl = document.getElementById('desc');
+        const countEl = document.getElementById('counter');
+        const loader = document.getElementById('loader');
 
-        // 이미지 미리 로딩 (끊김 방지 필수)
-        data.forEach(item => { const i = new Image(); i.src = item.img; });
+        // [핵심] 이미지 프리로딩 (로딩 화면 구현)
+        let loadedCount = 0;
+        const totalImages = foods.length;
 
-        function update() {
-            const item = data[idx];
+        function preloadImages() {
+            foods.forEach(item => {
+                const img = new Image();
+                img.src = item.src;
+                img.onload = () => {
+                    loadedCount++;
+                    if (loadedCount === totalImages) {
+                        // 모든 이미지가 로드되면 로딩창 끄고 시작
+                        setTimeout(() => {
+                            loader.style.opacity = '0';
+                            setTimeout(() => { loader.style.display = 'none'; startAnimation(); }, 500);
+                        }, 500);
+                    }
+                };
+                img.onerror = () => {
+                    // 에러나도 일단 진행 (멈춤 방지)
+                    loadedCount++;
+                    if (loadedCount === totalImages) {
+                         loader.style.display = 'none'; startAnimation();
+                    }
+                };
+            });
+        }
 
-            // 1. 이미지 교체 & 애니메이션
-            imgEl.src = item.img;
-            imgEl.classList.remove('zoom-anim');
-            void imgEl.offsetWidth; // 리셋 트리거
-            imgEl.classList.add('zoom-anim');
+        function updateDisplay() {
+            const item = foods[idx];
+
+            // 1. 이미지 교체 (줌 효과 리셋)
+            imgEl.classList.remove('zoom-effect');
+            imgEl.src = item.src;
+            
+            // 약간의 딜레이 후 줌 효과 시작
+            setTimeout(() => imgEl.classList.add('zoom-effect'), 50);
 
             // 2. 텍스트 교체
             countEl.innerText = idx + 1;
             nameEl.innerText = item.n;
             descEl.innerText = item.d;
 
-            // 3. 카드 애니메이션 (통통 튀는 느낌)
+            // 3. 카드 애니메이션 (올라오기)
             cardEl.classList.remove('show');
-            // 이미지가 먼저 바뀌고 텍스트가 따라오도록 타이밍 조절
             setTimeout(() => {
                 cardEl.classList.add('show');
             }, 100);
 
-            // 4. 프레임 효과 (미세하게 커졌다 작아짐)
-            frameEl.style.transform = "scale(0.98)";
-            setTimeout(() => { frameEl.style.transform = "scale(1)"; }, 150);
-
-            idx = (idx + 1) % data.length;
+            idx = (idx + 1) % foods.length;
         }
 
-        // 초기 실행
-        update();
-        // 1.5초 간격 반복
-        setInterval(update, 1500);
+        function startAnimation() {
+            updateDisplay();
+            setInterval(updateDisplay, 2000); // 2초 간격
+        }
 
-        function downloadHTML() {
-            document.getElementById('downBtn').style.display = 'none';
+        // 시작
+        preloadImages();
+
+        function downloadFile() {
+            const btn = document.getElementById('downBtn');
+            btn.style.display = 'none';
             const htmlContent = document.documentElement.outerHTML;
             const blob = new Blob([htmlContent], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'keto_diet_design.html';
+            a.download = 'diet_food_final.html';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            setTimeout(() => { document.getElementById('downBtn').style.display = 'block'; }, 1000);
+            setTimeout(() => { btn.style.display = 'block'; }, 1000);
         }
     </script>
 </body>
