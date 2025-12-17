@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>살이 제일 잘 찌는 시간대</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* 기본 설정 */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #E0F2F1; /* 연한 민트색 */
+            font-family: 'Noto Sans KR', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            color: #333;
+        }
+
+        /* 모바일 9:16 비율 컨테이너 */
+        .container {
+            width: 100%;
+            max-width: 450px; /* 대략적인 모바일 폭 */
+            height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* 릴스 UI 고려한 상하 여백 */
+            padding-top: 15vh; 
+            padding-bottom: 20vh;
+            padding-left: 10%;
+            padding-right: 10%;
+        }
+
+        /* 타이틀 영역 */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease;
+        }
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #004D40;
+            text-shadow: 2px 2px 0px rgba(255,255,255,0.5);
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 1.1rem;
+            color: #00695C;
+            font-weight: 700;
+            background: #fff;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* 시계 영역 */
+        .clock-wrapper {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            margin-bottom: 40px;
+        }
+
+        /* 24시간 원형 그래프 배경 */
+        .clock-bg {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #fff;
+            border: 10px solid #B2DFDB;
+            position: relative;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 활성화된 섹터 (CSS Conic Gradient로 제어) */
+        .active-sector {
+            position: absolute;
+            top: -10px; left: -10px; right: -10px; bottom: -10px;
+            border-radius: 50%;
+            background: conic-gradient(transparent 0%, transparent 100%);
+            transition: background 0.3s ease;
+            z-index: 1;
+            opacity: 0.8;
+        }
+
+        /* 중앙 아이콘 표시 영역 */
+        .center-display {
+            position: relative;
+            z-index: 2;
+            background: white;
+            width: 70%;
+            height: 70%;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 5px 10px rgba(0,0,0,0.05);
+        }
+
+        .center-icon {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .center-time {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: #555;
+        }
+
+        /* 하단 설명 카드 */
+        .info-card {
+            background: white;
+            width: 100%;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s ease;
+            border-left: 8px solid transparent;
+        }
+
+        .info-card.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .info-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .info-desc {
+            font-size: 1rem;
+            color: #555;
+            font-weight: 500;
+            line-height: 1.4;
+            word-break: keep-all;
+        }
+
+        /* 위험도 색상 클래스 */
+        .safe { color: #43A047; }
+        .warning { color: #FB8C00; }
+        .danger { color: #E53935; }
+        .critical { color: #8E24AA; }
+        .sleep { color: #37474F; }
+
+        /* 애니메이션 효과 */
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .pop-anim {
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>살이 확! 찌는 시간</h1>
+            <div class="subtitle">⏰ 24시간 다이어트 리듬</div>
+        </header>
+
+        <div class="clock-wrapper">
+            <div class="active-sector" id="activeSector"></div>
+            <div class="clock-bg">
+                <div class="center-display">
+                    <i id="mainIcon" class="fa-solid fa-clock center-icon" style="color:#ccc;"></i>
+                    <div id="mainTime" class="center-time">준비</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-card" id="infoCard">
+            <span class="info-title" id="infoTitle">분석 중...</span>
+            <span class="info-desc" id="infoDesc">하루 흐름을 시작합니다.</span>
+        </div>
+    </div>
+
+    <script>
+        // 데이터 정의 (요청 내용 반영)
+        const timeline = [
+            {
+                timeRange: "아침 08~10시",
+                title: "먹어도 안 찌는 황금 시간",
+                desc: "안심하세요! 지방 축적이 가장 적은 시간입니다.",
+                icon: "fa-sun",
+                color: "#43A047", // Green
+                type: "safe",
+                startDeg: 120, // 시계 방향 각도 (12시=0도 기준 아님, CSS conic은 12시=0도)
+                endDeg: 150    // 24시간계에서 대략적 위치 매핑
+            },
+            {
+                timeRange: "점심 12~02시",
+                title: "대사 활발, 걱정 NO",
+                desc: "에너지를 가장 많이 쓰는 시간, 든든히 드세요.",
+                icon: "fa-utensils",
+                color: "#7CB342", // Light Green
+                type: "safe",
+                startDeg: 180,
+                endDeg: 210
+            },
+            {
+                timeRange: "오후 04~06시",
+                title: "⚠️ 마의 간식 시간",
+                desc: "인슐린 민감도 하락! 당 높은 간식은 절대 금물.",
+                icon: "fa-cookie-bite",
+                color: "#FB8C00", // Orange
+                type: "warning",
+                startDeg: 240,
+                endDeg: 270
+            },
+            {
+                timeRange: "저녁 7시 이후",
+                title: "🚨 지방 저장 모드 ON",
+                desc: "혈당은 유지되고 몸은 지방을 쌓기 시작합니다.",
+                icon: "fa-bell",
+                color: "#E53935", // Red
+                type: "danger",
+                startDeg: 285,
+                endDeg: 315
+            },
+            {
+                timeRange: "저녁 9시 이후",
+                title: "🔥 살로 직행하는 시간",
+                desc: "먹는 족족 지방으로! 물만 마셔도 위험합니다.",
+                icon: "fa-weight-scale",
+                color: "#B71C1C", // Dark Red
+                type: "danger",
+                startDeg: 315,
+                endDeg: 345
+            },
+            {
+                timeRange: "자기 전 2시간",
+                title: "⛔ 숙면 방해 & 저장",
+                desc: "대사가 멈춥니다. 먹으면 잠도 못 자고 살만 쪄요.",
+                icon: "fa-moon",
+                color: "#4A148C", // Purple
+                type: "critical",
+                startDeg: 345,
+                endDeg: 360 // 실제로는 새벽까지 이어지지만 시각화를 위해 끝자락
+            }
+        ];
+
+        let currentIndex = 0;
+        const activeSector = document.getElementById('activeSector');
+        const mainIcon = document.getElementById('mainIcon');
+        const mainTime = document.getElementById('mainTime');
+        const infoCard = document.getElementById('infoCard');
+        const infoTitle = document.getElementById('infoTitle');
+        const infoDesc = document.getElementById('infoDesc');
+
+        // 빠른 진행을 위한 간격 (1.8초)
+        const INTERVAL_TIME = 1800; 
+
+        function updateDisplay() {
+            const item = timeline[currentIndex];
+
+            // 1. 시계 섹터 색칠 (Conic Gradient 활용)
+            // 24시간계에서 시각적 위치를 대략적으로 보여줌
+            // from 각도와 to 각도를 계산해서 색상을 칠함
+            const start = item.startDeg;
+            const end = item.endDeg;
+            
+            // 그라데이션으로 해당 영역만 색칠하고 나머지는 투명하게
+            activeSector.style.background = `conic-gradient(transparent ${start}deg, ${item.color} ${start}deg, ${item.color} ${end}deg, transparent ${end}deg)`;
+
+            // 2. 중앙 아이콘 및 시간 업데이트
+            mainIcon.className = `fa-solid ${item.icon} center-icon pop-anim`;
+            mainIcon.style.color = item.color;
+            mainTime.innerText = item.timeRange;
+            
+            // 애니메이션 재실행을 위한 리플로우
+            void mainIcon.offsetWidth; 
+            
+            // 3. 하단 카드 업데이트
+            infoCard.classList.remove('show');
+            
+            // 약간의 딜레이 후 텍스트 등장 (리듬감)
+            setTimeout(() => {
+                infoCard.style.borderLeftColor = item.color;
+                infoTitle.innerText = item.title;
+                infoTitle.style.color = item.color;
+                infoDesc.innerText = item.desc;
+                infoCard.classList.add('show');
+            }, 200);
+
+            // 다음 인덱스 설정
+            currentIndex = (currentIndex + 1) % timeline.length;
+        }
+
+        // 초기 실행 및 반복
+        // 약간의 시작 딜레이
+        setTimeout(() => {
+            updateDisplay();
+            setInterval(updateDisplay, INTERVAL_TIME);
+        }, 500);
+
+    </script>
+</body>
+</html>
